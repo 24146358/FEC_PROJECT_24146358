@@ -3,9 +3,9 @@ import subprocess, sys
 sensors = [
     ("temperature_sensor.py", "2"),
     ("humidity_sensor.py",    "2"),
-    ("co2_sensor.py",         "3"),
+    ("co_sensor.py",         "3"),
     ("motion_sensor.py",      "1"),
-    ("gas_sensor.py",         "3"),
+    ("smoke_sensor.py",         "3"),
 ]
 
 processes = []

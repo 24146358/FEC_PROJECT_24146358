@@ -6,7 +6,7 @@ import time
 dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
 table = dynamodb.Table("FEC_SensorReadings")
 
-SENSOR_TYPES = ["temperature", "humidity", "co2", "motion", "gas"]
+SENSOR_TYPES = ["Temperature", "Humidity", "CO", "Motion", "Smoke"]
 
 def lambda_handler(event, context):
     results = {}

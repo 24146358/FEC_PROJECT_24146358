@@ -6,4 +6,4 @@ if __name__ == "__main__":
     parser.add_argument("--interval", type=float, default=2.0,
                         help="Seconds between readings")
     args = parser.parse_args()
-    BaseSensor("CO2", "co", "ppm").run(args.interval)
+    BaseSensor("CO", "co", "ppm").run(args.interval)
