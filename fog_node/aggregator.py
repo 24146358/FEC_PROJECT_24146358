@@ -10,11 +10,11 @@ class Aggregator:
 
     # Validation ranges per sensor type
     VALID_RANGES = {
-        "temperature": (-20, 100),
-        "humidity":    (0, 100),
-        "co2":         (0, 10),
-        "gas":         (0, 1),
-        "motion":      (0, 1),
+        "Temperature": (-20, 100),
+        "Humidity":    (0, 100),
+        "CO":         (0, 10),
+        "Smoke":         (0, 1),
+        "Motion":      (0, 1),
     }
 
     def is_valid(self, sensor_type, value):
