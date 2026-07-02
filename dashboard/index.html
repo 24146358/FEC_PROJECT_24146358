@@ -95,7 +95,7 @@
           if (!items.length) return;
           const latest = parseFloat(items[0].latest || items[0].average || 0);
           document.getElementById(s.valId).textContent =
-            s.key === "motion" ? (latest ? "YES" : "NO") : latest.toFixed(3);
+            s.key === "Motion" ? (latest ? "YES" : "NO") : latest.toFixed(3);
 
           const chart = charts[s.key];
           chart.data.labels.push(ts);
