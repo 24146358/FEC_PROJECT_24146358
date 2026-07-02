@@ -1,0 +1,36 @@
+name: Deploy Lambda Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/lambda_ingest.py'
+      - 'backend/lambda_read.py'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region:            us-east-1
+
+      - name: Deploy FEC_Ingest Lambda
+        run: |
+          zip ingest.zip backend/lambda_ingest.py
+          aws lambda update-function-code \
+            --function-name FEC_Ingest \
+            --zip-file fileb://ingest.zip
+
+      - name: Deploy FEC_Read Lambda
+        run: |
+          zip read.zip backend/lambda_read.py
+          aws lambda update-function-code \
+            --function-name FEC_Read \
+            --zip-file fileb://read.zip
