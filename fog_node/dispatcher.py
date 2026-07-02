@@ -2,7 +2,7 @@ import requests
 import os
 
 # Replace with your actual API Gateway URL after Phase 3
-CLOUD_ENDPOINT = os.getenv("CLOUD_ENDPOINT", "https://REPLACE_ME.execute-api.eu-west-1.amazonaws.com/prod/ingest")
+CLOUD_ENDPOINT = os.getenv("CLOUD_ENDPOINT", "https://ru87w8ier8.execute-api.us-east-1.amazonaws.com/prod/ingest")
 
 def dispatch(batch):
     if not batch:

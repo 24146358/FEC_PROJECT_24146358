@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Building Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+    h1 { font-size: 1.5rem; margin-bottom: 4px; color: #38bdf8; }
+    .subtitle { font-size: 0.875rem; color: #94a3b8; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
+    .card h2 { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 12px; }
+    .stat { font-size: 2rem; font-weight: 700; color: #38bdf8; }
+    canvas { margin-top: 12px; max-height: 180px; }
+    #status { font-size: 0.75rem; color: #64748b; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Smart Building — IoT Sensor Dashboard</h1>
+  <p class="subtitle">Live data via fog node → AWS Lambda → DynamoDB. Refreshes every 10s.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Temperature (°C)</h2>
+      <div class="stat" id="temp-val">--</div>
+      <canvas id="temp-chart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Humidity (%)</h2>
+      <div class="stat" id="hum-val">--</div>
+      <canvas id="hum-chart"></canvas>
+    </div>
+    <div class="card">
+      <h2>CO Level (ppm)</h2>
+      <div class="stat" id="co2-val">--</div>
+      <canvas id="co2-chart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Smoke / Gas (ppm)</h2>
+      <div class="stat" id="gas-val">--</div>
+      <canvas id="gas-chart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Motion Detected</h2>
+      <div class="stat" id="motion-val">--</div>
+      <canvas id="motion-chart"></canvas>
+    </div>
+  </div>
+  <p id="status">Connecting...</p>
+
+  <script>
+    // REPLACE with your actual API Gateway URL
+    const API_URL = "https://ru87w8ier8.execute-api.us-east-1.amazonaws.com/prod/data";
+
+    const charts = {};
+    const sensors = [
+      { key: "temperature", label: "Temperature", valId: "temp-val",    chartId: "temp-chart",   color: "#f97316" },
+      { key: "humidity",    label: "Humidity",    valId: "hum-val",     chartId: "hum-chart",    color: "#38bdf8" },
+      { key: "co2",         label: "CO",          valId: "co2-val",     chartId: "co2-chart",    color: "#a78bfa" },
+      { key: "gas",         label: "Smoke",       valId: "gas-val",     chartId: "gas-chart",    color: "#fb7185" },
+      { key: "motion",      label: "Motion",      valId: "motion-val",  chartId: "motion-chart", color: "#4ade80" },
+    ];
+
+    function makeChart(id, color) {
+      const ctx = document.getElementById(id).getContext("2d");
+      return new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [{ data: [], borderColor: color, tension: 0.3,
+                       borderWidth: 2, pointRadius: 2, fill: false }]
+        },
+        options: { plugins: { legend: { display: false } },
+                   scales: { x: { display: false },
+                              y: { ticks: { color: "#94a3b8" },
+                                   grid: { color: "#1e293b" } } } }
+      });
+    }
+
+    sensors.forEach(s => {
+      charts[s.key] = makeChart(s.chartId, s.color);
+    });
+
+    async function fetchData() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        const ts = new Date().toLocaleTimeString();
+
+        sensors.forEach(s => {
+          const items = data[s.key] || [];
+          if (!items.length) return;
+          const latest = parseFloat(items[0].latest || items[0].average || 0);
+          document.getElementById(s.valId).textContent =
+            s.key === "motion" ? (latest ? "YES" : "NO") : latest.toFixed(3);
+
+          const chart = charts[s.key];
+          chart.data.labels.push(ts);
+          chart.data.datasets[0].data.push(latest);
+          if (chart.data.labels.length > 20) {
+            chart.data.labels.shift();
+            chart.data.datasets[0].data.shift();
+          }
+          chart.update();
+        });
+
+        document.getElementById("status").textContent = `Last updated: ${ts}`;
+      } catch (e) {
+        document.getElementById("status").textContent = `Error: ${e.message}`;
+      }
+    }
+
+    fetchData();
+    setInterval(fetchData, 10000);
+  </script>
+</body>
+</html>
