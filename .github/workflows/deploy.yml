@@ -25,7 +25,7 @@ jobs:
           cd backend
           zip ingest.zip lambda_ingest.py
           aws lambda update-function-code \
-            --function-name FEC_Ingest \
+            --function-name IOTIngest \
             --zip-file fileb://ingest.zip
 
       - name: Deploy FEC_Read Lambda
@@ -33,5 +33,5 @@ jobs:
           cd backend
           zip read.zip lambda_read.py
           aws lambda update-function-code \
-            --function-name FEC_Read \
+            --function-name IOTRead \
             --zip-file fileb://read.zip
