@@ -20,18 +20,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            eu-west-1
 
-      - name: Deploy FEC_Ingest Lambda
+      - name: Deploy IoTIngest Lambda
         run: |
           cd backend
           zip ingest.zip lambda_ingest.py
           aws lambda update-function-code \
-            --function-name IOTIngest \
+            --function-name IoTIngest \
             --zip-file fileb://ingest.zip
 
-      - name: Deploy FEC_Read Lambda
+      - name: Deploy IoTRead Lambda
         run: |
           cd backend
           zip read.zip lambda_read.py
           aws lambda update-function-code \
-            --function-name IOTRead \
+            --function-name IoTRead \
             --zip-file fileb://read.zip
