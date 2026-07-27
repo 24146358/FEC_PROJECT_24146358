@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key
 import time
 
 dynamodb = boto3.resource("dynamodb", region_name="eu-west-1")
-table = dynamodb.Table("FEC_SensorReadings")
+table = dynamodb.Table("SensorReadings")
 
 SENSOR_TYPES = ["Temperature", "Humidity", "CO", "Motion", "Smoke"]
 

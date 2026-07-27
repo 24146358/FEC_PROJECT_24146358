@@ -2,7 +2,7 @@ import requests
 import os
 
 #API Gateway endpoint for cloud ingestion
-CLOUD_ENDPOINT = os.getenv("CLOUD_ENDPOINT", "https://ru87w8ier8.execute-api.us-east-1.amazonaws.com/prod/ingest")
+CLOUD_ENDPOINT = os.getenv("CLOUD_ENDPOINT", "https://vx8wbpmmv5.execute-api.eu-west-1.amazonaws.com/ingest")
 
 def dispatch(batch):
     if not batch:

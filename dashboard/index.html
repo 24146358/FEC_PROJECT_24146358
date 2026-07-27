@@ -16,7 +16,7 @@ body{font-family:var(--font-sans);background:#0f172a;color:#e2e8f0;min-height:10
 canvas{width:100%!important;height:80px!important}
 .motion-display{padding:0.5rem 1rem 1rem;display:flex;align-items:center;gap:8px}
 .motion-pill{font-size:13px;font-weight:500;padding:4px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.15)}
-.motion-no{background:rgba(110,231,183,0.1);color:#6ee7b7}
+.motion-no{background:rgba(110,231,183,0.1);color:#6ee7b7}                                                                    
 .motion-yes{background:rgba(110,231,183,0.3);color:#6ee7b7}
 .dropdown-wrap{border-top:1px solid rgba(255,255,255,0.08)}
 details{width:100%}
@@ -50,24 +50,24 @@ details[open] summary i.chevron{transform:rotate(180deg)}
 <script>
 const sensors=[
   {key:"Temperature",unit:"C",showChart:true,color:"#a78bfa",cls:"c0",
-   why:"<strong>Why tracked:</strong> Overheating in server rooms or heating failures can damage equipment and pose safety risks. Continuous monitoring enables automated HVAC control and early fault detection.",
-   range:"Normal range: 18 – 26 C"},
+   why:"<strong>Why it is being tracked:</strong> Overheating in server rooms or heating failures can damage equipment and pose safety risks. Continuous monitoring enables automated HVAC control and early fault detection.",
+   range:"Normal range: 18 to 26 C"},
   {key:"Humidity",unit:"%",showChart:true,color:"#60a5fa",cls:"c1",
-   why:"<strong>Why tracked:</strong> High humidity promotes mould growth and equipment corrosion; low humidity increases static electricity risk. Maintaining 40–60% protects both occupants and assets.",
-   range:"Normal range: 40 – 60 %"},
+   why:"<strong>Why it is being tracked:</strong> High humidity promotes mould growth and equipment corrosion; low humidity increases static electricity risk. Maintaining 40 to 60% protects both occupants and assets.",
+   range:"Normal range: 40 to 60 %"},
   {key:"CO",unit:"ppm",showChart:true,color:"#fcd34d",cls:"c2",
-   why:"<strong>Why tracked:</strong> Carbon monoxide is an odourless, lethal gas produced by faulty boilers or combustion appliances. Early detection triggers ventilation and evacuation alerts before dangerous concentrations build.",
+   why:"<strong>Why it is being tracked:</strong> Carbon monoxide is an odourless, lethal gas produced by faulty boilers or combustion appliances. Early detection triggers ventilation and evacuation alerts before dangerous concentrations build.",
    range:"Safe threshold: &lt; 9 ppm"},
   {key:"Motion",unit:"",showChart:false,color:"#6ee7b7",cls:"c3",
-   why:"<strong>Why tracked:</strong> Occupancy detection enables smart lighting and HVAC zoning, reducing energy waste in unoccupied zones. It also supports intruder detection outside business hours.",
+   why:"<strong>Why it is being tracked:</strong> Occupancy detection enables smart lighting and HVAC zoning, reducing energy waste in unoccupied zones. It also supports intruder detection outside business hours.",
    range:"Values: active / inactive"},
   {key:"Smoke",unit:"ppm",showChart:true,color:"#f9a8d4",cls:"c4",
-   why:"<strong>Why tracked:</strong> Smoke concentration is an early indicator of fire before flames develop. Integration with the pipeline allows automated alarm triggering and emergency service notification.",
+   why:"<strong>Why it is being tracked:</strong> Smoke concentration is an early indicator of fire before flames develop. Integration with the pipeline allows automated alarm triggering and emergency service notification.",
    range:"Alert threshold: &gt; 0.02 ppm"}
 ];
 
 const charts={};
-const API_URL="https://8l6kv7dsw4.execute-api.eu-west-1.amazonaws.com/prod/data";
+const API_URL="https://vx8wbpmmv5.execute-api.eu-west-1.amazonaws.com/data";
 const grid=document.getElementById("grid");
 
 sensors.forEach(s=>{

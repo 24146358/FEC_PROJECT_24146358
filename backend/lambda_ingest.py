@@ -3,7 +3,7 @@ import boto3
 import time
 
 dynamodb = boto3.resource("dynamodb", region_name="eu-west-1")
-table = dynamodb.Table("FEC_SensorReadings")
+table = dynamodb.Table("SensorReadings")
 
 # IoT ingest Lambda it receives fog node batches and writes to Dynamodb table
 def lambda_handler(event, context):
