@@ -1,120 +1,153 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Building Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
-    h1 { font-size: 1.5rem; margin-bottom: 4px; color: #38bdf8; }
-    .subtitle { font-size: 0.875rem; color: #94a3b8; margin-bottom: 24px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; }
-    .card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
-    .card h2 { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 12px; }
-    .stat { font-size: 2rem; font-weight: 700; color: #38bdf8; }
-    canvas { margin-top: 12px; max-height: 180px; }
-    #status { font-size: 0.75rem; color: #64748b; margin-top: 20px; }
-  </style>
-</head>
-<body>
-  <h1>Smart Building — IoT Sensor Dashboard</h1>
-  <p class="subtitle">Live data via fog node → AWS Lambda → DynamoDB. Refreshes every 10s.</p>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:#0f172a;color:#e2e8f0;min-height:100vh}
+.header{padding:1.25rem 1.5rem 0.75rem;background:linear-gradient(135deg,#1e293b,#0f172a);border-bottom:1px solid rgba(255,255,255,0.07)}
+.header-top{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.header h1{font-size:17px;font-weight:500;color:#f1f5f9}
+.badge{font-size:10px;background:#22c55e22;color:#22c55e;border:1px solid #22c55e44;padding:2px 8px;border-radius:20px;font-weight:500}
+.header p{font-size:12px;color:#64748b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:14px;padding:1.25rem 1.5rem}
+.card{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)}
+.card-top{padding:1rem 1rem 0.6rem}
+.sensor-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;opacity:0.7;margin-bottom:6px}
+.sensor-val{font-size:26px;font-weight:500;line-height:1}
+.sensor-unit{font-size:13px;font-weight:400;opacity:0.7}
+.chart-wrap{padding:0 0.5rem 0.5rem;height:80px}
+canvas{width:100%!important;height:80px!important}
+.motion-display{padding:0.5rem 1rem 1rem;display:flex;align-items:center;gap:8px}
+.motion-pill{font-size:13px;font-weight:500;padding:4px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.15)}
+.motion-no{background:rgba(110,231,183,0.1);color:#6ee7b7}
+.motion-yes{background:rgba(110,231,183,0.3);color:#6ee7b7}
+.dropdown-wrap{border-top:1px solid rgba(255,255,255,0.08)}
+details{width:100%}
+summary{padding:0.5rem 0.875rem;font-size:11.5px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;user-select:none;opacity:0.75}
+summary:hover{opacity:1}
+summary::-webkit-details-marker{display:none}
+summary i.chevron{margin-left:auto;font-size:13px;transition:transform 0.2s}
+details[open] summary i.chevron{transform:rotate(180deg)}
+.info-body{padding:0.5rem 0.875rem 0.75rem;font-size:11.5px;line-height:1.65;border-top:1px solid rgba(255,255,255,0.08);opacity:0.85}
+.info-body strong{opacity:1;font-weight:500}
+.status-bar{padding:0.6rem 1.5rem;font-size:11.5px;color:#475569;border-top:1px solid rgba(255,255,255,0.06);background:#0f172a}
+.c0{background:linear-gradient(160deg,#1e1030,#2d1654);color:#c4b5fd}
+.c1{background:linear-gradient(160deg,#0c2340,#0f3d6e);color:#93c5fd}
+.c2{background:linear-gradient(160deg,#1a1200,#3d2a00);color:#fcd34d}
+.c3{background:linear-gradient(160deg,#052010,#083d20);color:#6ee7b7}
+.c4{background:linear-gradient(160deg,#1f0616,#3d0a2a);color:#f9a8d4}
+</style>
 
-  <div class="grid">
-    <div class="card">
-      <h2>Temperature (°C)</h2>
-      <div class="stat" id="temp-val">--</div>
-      <canvas id="temp-chart"></canvas>
-    </div>
-    <div class="card">
-      <h2>Humidity (%)</h2>
-      <div class="stat" id="hum-val">--</div>
-      <canvas id="hum-chart"></canvas>
-    </div>
-    <div class="card">
-      <h2>CO Level (ppm)</h2>
-      <div class="stat" id="co-val">--</div>
-      <canvas id="co-chart"></canvas>
-    </div>
-    <div class="card">
-      <h2>Smoke / Gas (ppm)</h2>
-      <div class="stat" id="smoke-val">--</div>
-      <canvas id="smoke-chart"></canvas>
-    </div>
-    <div class="card">
-      <h2>Motion Detected</h2>
-      <div class="stat" id="motion-val">--</div>
-      <canvas id="motion-chart"></canvas>
-    </div>
+<div class="header">
+  <div class="header-top">
+    <h1>Smart building environmental monitoring</h1>
+    <span class="badge">&#9679; live</span>
   </div>
-  <p id="status">Connecting...</p>
+  <p>Refreshes every 10s</p>
+</div>
 
-  <script>
-    // REPLACE with your actual API Gateway URL
-    const API_URL = "https://ru87w8ier8.execute-api.us-east-1.amazonaws.com/prod/data";
+<div class="grid" id="grid"></div>
+<div class="status-bar" id="status">Initialising...</div>
 
-    const charts = {};
-    const sensors = [
-      { key: "Temperature", label: "Temperature", valId: "temp-val",    chartId: "temp-chart",   color: "#f97316" },
-      { key: "Humidity",    label: "Humidity",    valId: "hum-val",     chartId: "hum-chart",    color: "#38bdf8" },
-      { key: "CO",         label: "CO",          valId: "co-val",     chartId: "co-chart",    color: "#a78bfa" },
-      { key: "Smoke",         label: "Smoke",       valId: "smoke-val",     chartId: "smoke-chart",    color: "#fb7185" },
-      { key: "Motion",      label: "Motion",      valId: "motion-val",  chartId: "motion-chart", color: "#4ade80" },
-    ];
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const sensors=[
+  {key:"Temperature",unit:"C",showChart:true,color:"#a78bfa",cls:"c0",
+   why:"<strong>Why tracked:</strong> Overheating in server rooms or heating failures can damage equipment and pose safety risks. Continuous monitoring enables automated HVAC control and early fault detection.",
+   range:"Normal range: 18 – 26 C"},
+  {key:"Humidity",unit:"%",showChart:true,color:"#60a5fa",cls:"c1",
+   why:"<strong>Why tracked:</strong> High humidity promotes mould growth and equipment corrosion; low humidity increases static electricity risk. Maintaining 40–60% protects both occupants and assets.",
+   range:"Normal range: 40 – 60 %"},
+  {key:"CO",unit:"ppm",showChart:true,color:"#fcd34d",cls:"c2",
+   why:"<strong>Why tracked:</strong> Carbon monoxide is an odourless, lethal gas produced by faulty boilers or combustion appliances. Early detection triggers ventilation and evacuation alerts before dangerous concentrations build.",
+   range:"Safe threshold: &lt; 9 ppm"},
+  {key:"Motion",unit:"",showChart:false,color:"#6ee7b7",cls:"c3",
+   why:"<strong>Why tracked:</strong> Occupancy detection enables smart lighting and HVAC zoning, reducing energy waste in unoccupied zones. It also supports intruder detection outside business hours.",
+   range:"Values: active / inactive"},
+  {key:"Smoke",unit:"ppm",showChart:true,color:"#f9a8d4",cls:"c4",
+   why:"<strong>Why tracked:</strong> Smoke concentration is an early indicator of fire before flames develop. Integration with the pipeline allows automated alarm triggering and emergency service notification.",
+   range:"Alert threshold: &gt; 0.02 ppm"}
+];
 
-    function makeChart(id, color) {
-      const ctx = document.getElementById(id).getContext("2d");
-      return new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: [],
-          datasets: [{ data: [], borderColor: color, tension: 0.3,
-                       borderWidth: 2, pointRadius: 2, fill: false }]
-        },
-        options: { plugins: { legend: { display: false } },
-                   scales: { x: { display: false },
-                              y: { ticks: { color: "#94a3b8" },
-                                   grid: { color: "#1e293b" } } } }
-      });
-    }
+const charts={};
+const API_URL="https://8l6kv7dsw4.execute-api.eu-west-1.amazonaws.com/prod/data";
+const grid=document.getElementById("grid");
 
-    sensors.forEach(s => {
-      charts[s.key] = makeChart(s.chartId, s.color);
-    });
+sensors.forEach(s=>{
+  const card=document.createElement("div");
+  card.className=`card ${s.cls}`;
 
-    async function fetchData() {
-      try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-        const ts = new Date().toLocaleTimeString();
+  const chartOrMotion = s.showChart
+    ? `<div class="chart-wrap"><canvas id="chart-${s.key}"></canvas></div>`
+    : `<div class="motion-display"><span class="motion-pill motion-no" id="motion-pill">NO</span><span style="font-size:12px;opacity:0.6">occupancy detected</span></div>`;
 
-        sensors.forEach(s => {
-          const items = data[s.key] || [];
-          if (!items.length) return;
-          const latest = parseFloat(items[0].latest || items[0].average || 0);
-          document.getElementById(s.valId).textContent =
-            s.key === "Motion" ? (latest ? "YES" : "NO") : latest.toFixed(3);
+  card.innerHTML=`
+    <div class="card-top">
+      <div class="sensor-label">${s.key}</div>
+      <div class="sensor-val" id="val-${s.key}">--${s.unit?`<span class="sensor-unit"> ${s.unit}</span>`:""}</div>
+    </div>
+    ${chartOrMotion}
+    <div class="dropdown-wrap">
+      <details>
+        <summary>
+          <i class="ti ti-info-circle" aria-hidden="true"></i>
+          Why this sensor?
+          <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+        </summary>
+        <div class="info-body">${s.why}<br><br><strong>Range:</strong> ${s.range}</div>
+      </details>
+    </div>`;
+  grid.appendChild(card);
 
-          const chart = charts[s.key];
-          chart.data.labels.push(ts);
-          chart.data.datasets[0].data.push(latest);
-          if (chart.data.labels.length > 20) {
-            chart.data.labels.shift();
-            chart.data.datasets[0].data.shift();
-          }
-          chart.update();
-        });
-
-        document.getElementById("status").textContent = `Last updated: ${ts}`;
-      } catch (e) {
-        document.getElementById("status").textContent = `Error: ${e.message}`;
+  if(s.showChart){
+    const ctx=document.getElementById(`chart-${s.key}`).getContext("2d");
+    charts[s.key]=new Chart(ctx,{
+      type:"line",
+      data:{labels:[],datasets:[{data:[],borderColor:s.color,borderWidth:1.5,pointRadius:0,tension:0.4,fill:false}]},
+      options:{
+        animation:false,responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{enabled:false}},
+        scales:{
+          x:{display:false},
+          y:{display:true,
+             grid:{color:"rgba(255,255,255,0.06)"},
+             ticks:{font:{size:9},color:"rgba(255,255,255,0.4)",maxTicksLimit:3,
+               callback:v=>Number(v).toFixed(2)}}
+        }
       }
-    }
+    });
+  }
+});
 
-    fetchData();
-    setInterval(fetchData, 10000);
-  </script>
-</body>
-</html>
+async function fetchData(){
+  try{
+    const res=await fetch(API_URL);
+    const data=await res.json();
+    const ts=new Date().toLocaleTimeString();
+    sensors.forEach(s=>{
+      const items=data[s.key]||[];
+      if(!items.length)return;
+      const val=parseFloat(items[0].latest??items[0].average??0);
+      const el=document.getElementById(`val-${s.key}`);
+
+      if(s.key==="Motion"){
+        el.innerHTML=val?"YES":"NO";
+        const pill=document.getElementById("motion-pill");
+        if(pill){
+          pill.textContent=val?"YES":"NO";
+          pill.className=`motion-pill ${val?"motion-yes":"motion-no"}`;
+        }
+      } else {
+        el.innerHTML=`${Number(val).toFixed(3)}<span class="sensor-unit"> ${s.unit}</span>`;
+        const c=charts[s.key];
+        c.data.labels.push(ts);
+        c.data.datasets[0].data.push(val);
+        if(c.data.labels.length>20){c.data.labels.shift();c.data.datasets[0].data.shift();}
+        c.update();
+      }
+    });
+    document.getElementById("status").textContent=`Last updated: ${ts}`;
+  }catch(e){
+    document.getElementById("status").textContent=`Awaiting data... (${e.message})`;
+  }
+}
+fetchData();
+setInterval(fetchData,10000);
+</script>

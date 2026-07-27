@@ -19,7 +19,7 @@ class BaseSensor:
         return list(df[self.column])
 
     def _jitter(self, value):
-        """Add tiny noise on each loop so repeated passes look realistic."""
+        #Add Jitter so repeated cycles of the same value are not sent to the fog
         if isinstance(value, bool) or isinstance(value, int):
             return value
         return round(value + random.uniform(-0.01 * abs(value), 0.01 * abs(value)), 4)

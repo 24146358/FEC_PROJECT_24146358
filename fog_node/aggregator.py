@@ -39,7 +39,7 @@ class Aggregator:
         return (time.time() - self.last_flush) >= BUFFER_SECONDS
 
     def flush(self):
-        """Return aggregated batch and clear buffers."""
+        #Return aggregated batch and clear buffers
         batch = {}
         for sensor_type, readings in self.buffers.items():
             if not readings:

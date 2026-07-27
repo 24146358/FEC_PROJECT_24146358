@@ -24,7 +24,7 @@ def health():
     return jsonify({"status": "fog node running"}), 200
 
 def flush_loop():
-    """Background thread: flush and dispatch every BUFFER_SECONDS."""
+    #Background thread: flush and dispatch every BUFFER_SECONDS
     while True:
         time.sleep(1)
         if aggregator.should_flush():
